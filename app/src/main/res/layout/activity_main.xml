@@ -4,39 +4,79 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     tools:context=".MainActivity">
 
-    <EditText
-        android:id="@+id/input_field"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@id/text"
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="177dp"
+        android:layout_height="172dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/todoboom_logo"
+        app:layout_constraintBottom_toTopOf="@id/input_field"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop= "100dp" />
+        android:contentDescription="@string/image_logo_description" />
+
+    <EditText
+        android:id="@+id/input_field"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:hint="@string/enter_input_task"
+        android:textAlignment="center"
+        android:textColorHint="@color/gray"
+        android:textColor="@color/white"
+        android:textColorLink="@color/pink_dark"
+        android:layout_centerHorizontal="true"
+        app:layout_constraintBottom_toTopOf="@id/button"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/logo"
+        android:autofillHints="Enter a task" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ADD TASK"
+        android:backgroundTint="@color/pink"
+        android:textColor="@color/white"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
+        app:layout_constraintBottom_toTopOf="@id/text_title"
+        app:layout_constraintTop_toBottomOf="@id/input_field"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/text_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/todo_list_title"
+        android:textColor="@color/white"
+        android:textSize="9pt"
+        android:textStyle="bold"
+        android:layout_marginTop="30dp"
+        app:layout_constraintBottom_toTopOf="@+id/text"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button" />
 
     <TextView
         android:id="@+id/text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@id/button"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/white"
+        android:textSize="9pt"
+        android:textAlignment="center"
+        android:layout_marginTop="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/input_field"
-        app:layout_constraintVertical_bias="0.097"
-        android:layout_marginTop= "100dp"/>
-
-    <Button
-    android:id="@+id/button"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="click"
-    android:layout_marginTop="20dp"
-    android:layout_marginBottom="20dp"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/text"
-    app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/text_title" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
