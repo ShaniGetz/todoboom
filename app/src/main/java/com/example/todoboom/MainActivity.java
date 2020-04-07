@@ -1,5 +1,6 @@
 package com.example.todoboom;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -13,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
     EditText inputField;
     TextView textView;
     Button button;
+    private String task;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,10 +28,20 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                textView.setText(inputField.getText());
+                task = String.valueOf(inputField.getText());
+                textView.setText(task);
                 inputField.setText("");
             }
         });
-
+        if (savedInstanceState != null){
+            task = savedInstanceState.getString("task");
+            textView.setText(task);
         }
     }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("task", task);
+    }
+}
