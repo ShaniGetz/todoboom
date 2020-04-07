@@ -36,7 +36,8 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/logo"
-        android:autofillHints="Enter a task" />
+        android:autofillHints="Enter a task"
+        android:inputType="text" />
 
     <Button
         android:id="@+id/button"
