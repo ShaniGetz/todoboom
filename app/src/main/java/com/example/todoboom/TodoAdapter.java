@@ -1,7 +1,5 @@
 package com.example.todoboom;
 
-import android.content.Intent;
-import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder> {
+public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
 
     private ArrayList<Todo> mTodoList;
 
@@ -77,13 +75,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder> 
         this.notifyItemInserted(mTodoList.size() - 1);
     }
 
-    public ArrayList<Todo> getmTodoList(){
+    ArrayList<Todo> getTodoList(){
         return mTodoList;
     }
-
-//    private void callEditCompletedTodoItemActivity(int position) {
-//        Intent intent = new Intent(getApplicationContext(), EditCompletedTodoItemActivity.class);
-//        intent.putExtra("position", position);
-//        startActivity(intent);
-//    }
 }

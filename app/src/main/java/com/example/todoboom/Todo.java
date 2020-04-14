@@ -1,23 +1,55 @@
 package com.example.todoboom;
 
-public class Todo {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Todo implements Parcelable {
+
     private String description;
     private boolean isDone;
 
-    public Todo(String description){
+    private Todo(Parcel in) {
+        description = in.readString();
+        isDone = in.readByte() != 0;
+    }
+
+    public static final Creator<Todo> CREATOR = new Creator<Todo>() {
+        @Override
+        public Todo createFromParcel(Parcel in) {
+            return new Todo(in);
+        }
+
+        @Override
+        public Todo[] newArray(int size) {
+            return new Todo[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(description);
+        dest.writeInt(isDone ? 1 : 0);
+    }
+
+    Todo(String description){
         this.description = description;
         this.isDone = false;
     }
 
-    public String getDescription() {
+    String getDescription() {
         return description;
     }
 
-    public boolean getIsDone(){
+    boolean getIsDone(){
         return isDone;
     }
 
-    public void setIsDone(Boolean bool){
+    void setIsDone(Boolean bool){
         this.isDone=bool;
     }
 }

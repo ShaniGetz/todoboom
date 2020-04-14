@@ -31,18 +31,20 @@ public class MainActivity extends AppCompatActivity {
         textView = findViewById(R.id.text);
         button = findViewById(R.id.button);
 
-        mAdapter = new TodoAdapter();
-
         recyclerViewTasks = findViewById(R.id.recycler_view_tasks);
         layoutManager = new LinearLayoutManager(this);
         recyclerViewTasks.setLayoutManager(layoutManager);
-        recyclerViewTasks.setAdapter(mAdapter);
+
+        if (mAdapter == null) {
+            mAdapter = new TodoAdapter();
+            recyclerViewTasks.setAdapter(mAdapter);
+        }
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Todo task = new Todo(String.valueOf(inputField.getText()));
-                if (task.getDescription().equals("")) {
+                if (task.getDescription().length() == 0) {
                     toastMessage("you can't create an empty task");
                 } else {
                     mAdapter.addItem(task);
@@ -50,23 +52,21 @@ public class MainActivity extends AppCompatActivity {
                 inputField.setText("");
             }
         });
-
-//        if (savedInstanceState != null){
-////            task = savedInstanceState.getString("task");
-////            textView.setText(task);
-//        }
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("inputFieldText",String.valueOf(inputField.getText()));
+        outState.putParcelableArrayList("TodoList",mAdapter.getTodoList());
     }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         inputField.setText(savedInstanceState.getString("inputFieldText"));
+        mAdapter = new TodoAdapter(savedInstanceState.<Todo>getParcelableArrayList("TodoList"));
+        recyclerViewTasks.setAdapter(mAdapter);
     }
 
     public void toastMessage(String message) {
