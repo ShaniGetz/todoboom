@@ -1,5 +1,7 @@
 package com.example.todoboom;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
 
     private ArrayList<Todo> mTodoList;
+    private Context mContext;
 
     static class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -28,12 +31,14 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
         }
     }
 
-    TodoAdapter() {
+    TodoAdapter(Context context) {
         this.mTodoList = new ArrayList<>();
+        this.mContext = context;
     }
 
-    TodoAdapter(ArrayList<Todo> todoList) {
+    TodoAdapter(ArrayList<Todo> todoList, Context context) {
         this.mTodoList = todoList;
+        this.mContext = context;
     }
 
     @Override
@@ -56,10 +61,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
                 if (isChecked) {
                     mTodoList.get(holder.getAdapterPosition()).setIsDone(isChecked);
                     buttonView.setEnabled(false);
-
-//                    MainActivity.
-//                    ;final Toast toastTaskIsDone = Toast.makeText(, "", Toast.LENGTH_SHORT);
-                    // todo: Notify by toast "TODO <user's string> is now DONE. BOOM!", Toast.LENGTH_SHORT);
+                    Toast.makeText(mContext,"TODO " +task.getDescription()+  " is now DONE. BOOM!", Toast.LENGTH_SHORT).show();
                 }
             }
         });

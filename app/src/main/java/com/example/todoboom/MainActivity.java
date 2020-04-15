@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -19,7 +20,6 @@ public class MainActivity extends AppCompatActivity {
     TextView textView;
     Button button;
     private RecyclerView recyclerViewTasks;
-    private LinearLayoutManager layoutManager;
     private TodoAdapter mAdapter;
 
     @Override
@@ -32,11 +32,11 @@ public class MainActivity extends AppCompatActivity {
         button = findViewById(R.id.button);
 
         recyclerViewTasks = findViewById(R.id.recycler_view_tasks);
-        layoutManager = new LinearLayoutManager(this);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerViewTasks.setLayoutManager(layoutManager);
 
         if (mAdapter == null) {
-            mAdapter = new TodoAdapter();
+            mAdapter = new TodoAdapter(MainActivity.this);
             recyclerViewTasks.setAdapter(mAdapter);
         }
 
@@ -65,13 +65,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         inputField.setText(savedInstanceState.getString("inputFieldText"));
-        mAdapter = new TodoAdapter(savedInstanceState.<Todo>getParcelableArrayList("TodoList"));
+        mAdapter = new TodoAdapter(savedInstanceState.<Todo>getParcelableArrayList("TodoList"), MainActivity.this);
         recyclerViewTasks.setAdapter(mAdapter);
     }
 
     public void toastMessage(String message) {
         Toast newToast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT);
         newToast.setGravity(Gravity.CENTER_HORIZONTAL, 0, 0);
+        ViewGroup group = (ViewGroup) newToast.getView();
+        TextView messageTextView = (TextView) group.getChildAt(0);
+        messageTextView.setTextSize(16);
         newToast.show();
     }
 }
