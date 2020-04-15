@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnDon
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         inputField.setText(savedInstanceState.getString("inputFieldText"));
-        mTodoList = savedInstanceState.<Todo>getParcelableArrayList("TodoList");
+        mTodoList = savedInstanceState.getParcelableArrayList("TodoList");
         mAdapter = new TodoAdapter(mTodoList, this);
         recyclerViewTasks.setAdapter(mAdapter);
     }

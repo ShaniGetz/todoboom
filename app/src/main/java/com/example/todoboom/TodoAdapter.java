@@ -48,9 +48,6 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
         holder.checkBoxIsDone.setOnCheckedChangeListener(null);
         holder.checkBoxIsDone.setChecked(task.getIsDone());
         holder.textViewTask.setText(task.getDescription());
-        if (task.getIsDone()){
-            holder.textViewTask.setTextColor(Color.rgb(160,160,165));
-        }
         holder.checkBoxIsDone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
             @Override
@@ -58,9 +55,6 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
                 if (isChecked) {
                     buttonView.setEnabled(false);
                     mOnDoneListener.markedAsDone(position);
-                    if (task.getIsDone()){
-                        holder.textViewTask.setTextColor(Color.rgb(160,160,165));
-                    }
                 }
             }
         });
