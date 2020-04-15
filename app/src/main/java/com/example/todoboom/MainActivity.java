@@ -14,8 +14,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.ArrayList;
 
+public class MainActivity extends AppCompatActivity implements TodoAdapter.OnDoneListener {
+
+    ArrayList<Todo> mTodoList;
     EditText inputField;
     TextView textView;
     Button button;
@@ -35,10 +38,9 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerViewTasks.setLayoutManager(layoutManager);
 
-        if (mAdapter == null) {
-            mAdapter = new TodoAdapter(MainActivity.this);
-            recyclerViewTasks.setAdapter(mAdapter);
-        }
+        mTodoList = new ArrayList<>();
+        mAdapter = new TodoAdapter(mTodoList,this);
+        recyclerViewTasks.setAdapter(mAdapter);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
                 if (task.getDescription().length() == 0) {
                     toastMessage("you can't create an empty task");
                 } else {
-                    mAdapter.addItem(task);
+                    addItem(task);
                 }
                 inputField.setText("");
             }
@@ -58,14 +60,15 @@ public class MainActivity extends AppCompatActivity {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("inputFieldText",String.valueOf(inputField.getText()));
-        outState.putParcelableArrayList("TodoList",mAdapter.getTodoList());
+        outState.putParcelableArrayList("TodoList",mTodoList);
     }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         inputField.setText(savedInstanceState.getString("inputFieldText"));
-        mAdapter = new TodoAdapter(savedInstanceState.<Todo>getParcelableArrayList("TodoList"), MainActivity.this);
+        mTodoList = savedInstanceState.<Todo>getParcelableArrayList("TodoList");
+        mAdapter = new TodoAdapter(mTodoList, this);
         recyclerViewTasks.setAdapter(mAdapter);
     }
 
@@ -76,5 +79,18 @@ public class MainActivity extends AppCompatActivity {
         TextView messageTextView = (TextView) group.getChildAt(0);
         messageTextView.setTextSize(16);
         newToast.show();
+    }
+
+    private void addItem(Todo task) {
+        mTodoList.add(task);
+        mAdapter.updateList(mTodoList, mTodoList.size() - 1);
+    }
+
+    @Override
+    public void markedAsDone (int position) {
+        Todo task = mTodoList.get(position);
+        task.setIsDone(true);
+        String doneMessage = "TODO " + task.getDescription() +  " is now DONE. BOOM!";
+        toastMessage(doneMessage);
     }
 }

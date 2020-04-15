@@ -1,14 +1,12 @@
 package com.example.todoboom;
 
-import android.content.Context;
-import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,7 +15,7 @@ import java.util.ArrayList;
 public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
 
     private ArrayList<Todo> mTodoList;
-    private Context mContext;
+    private OnDoneListener mOnDoneListener;
 
     static class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -31,14 +29,9 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
         }
     }
 
-    TodoAdapter(Context context) {
-        this.mTodoList = new ArrayList<>();
-        this.mContext = context;
-    }
-
-    TodoAdapter(ArrayList<Todo> todoList, Context context) {
+    TodoAdapter(ArrayList<Todo> todoList, OnDoneListener listener) {
         this.mTodoList = todoList;
-        this.mContext = context;
+        this.mOnDoneListener = listener;
     }
 
     @Override
@@ -50,18 +43,24 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
     }
 
     @Override
-    public void onBindViewHolder(final MyViewHolder holder, int position) {
+    public void onBindViewHolder(final MyViewHolder holder, final int position) {
         final Todo task = mTodoList.get(position);
         holder.checkBoxIsDone.setOnCheckedChangeListener(null);
         holder.checkBoxIsDone.setChecked(task.getIsDone());
         holder.textViewTask.setText(task.getDescription());
-        holder.checkBoxIsDone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        if (task.getIsDone()){
+            holder.textViewTask.setTextColor(Color.rgb(160,160,165));
+        }
+        holder.checkBoxIsDone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    mTodoList.get(holder.getAdapterPosition()).setIsDone(isChecked);
                     buttonView.setEnabled(false);
-                    Toast.makeText(mContext,"TODO " +task.getDescription()+  " is now DONE. BOOM!", Toast.LENGTH_SHORT).show();
+                    mOnDoneListener.markedAsDone(position);
+                    if (task.getIsDone()){
+                        holder.textViewTask.setTextColor(Color.rgb(160,160,165));
+                    }
                 }
             }
         });
@@ -72,12 +71,12 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
         return mTodoList.size();
     }
 
-    void addItem(Todo item) {
-        mTodoList.add(item);
-        this.notifyItemInserted(mTodoList.size() - 1);
+    void updateList(ArrayList<Todo> list, int position) {
+        mTodoList = list;
+        this.notifyItemInserted(position);
     }
 
-    ArrayList<Todo> getTodoList(){
-        return mTodoList;
+    public interface OnDoneListener {
+        void markedAsDone(int position);
     }
 }
