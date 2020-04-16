@@ -14,31 +14,40 @@ import java.util.ArrayList;
 public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
 
     private ArrayList<Todo> mTodoList;
-    private OnDoneListener mOnDoneListener;
+    private OnTaskEventListener mOnTaskEventListener;
 
-    static class MyViewHolder extends RecyclerView.ViewHolder {
+    static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
 
         TextView textViewTask;
         CheckBox checkBoxIsDone;
+        OnTaskEventListener mOnTaskEventListener;
 
-        MyViewHolder(View itemView) {
+        MyViewHolder(View itemView, OnTaskEventListener mOnTaskEventListener) {
             super(itemView);
-            textViewTask = itemView.findViewById(R.id.TextViewTask);
-            checkBoxIsDone = itemView.findViewById(R.id.CheckBoxIsDone);
+            this.textViewTask = itemView.findViewById(R.id.TextViewTask);
+            this.checkBoxIsDone = itemView.findViewById(R.id.CheckBoxIsDone);
+            this.mOnTaskEventListener = mOnTaskEventListener;
+            itemView.setOnLongClickListener(this);
+
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            mOnTaskEventListener.onTodoLongClick(getAdapterPosition());
+            return false;
         }
     }
 
-    TodoAdapter(ArrayList<Todo> todoList, OnDoneListener listener) {
+    TodoAdapter(ArrayList<Todo> todoList, OnTaskEventListener listener) {
         this.mTodoList = todoList;
-        this.mOnDoneListener = listener;
+        this.mOnTaskEventListener = listener;
     }
 
     @Override
     public TodoAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
                                                        int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.task_layout, parent, false);
-
-        return new MyViewHolder(v);
+        return new MyViewHolder(v, mOnTaskEventListener);
     }
 
     @Override
@@ -53,7 +62,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     buttonView.setEnabled(false);
-                    mOnDoneListener.markedAsDone(position);
+                    mOnTaskEventListener.markedAsDone(position);
                 }
             }
         });
@@ -64,12 +73,18 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
         return mTodoList.size();
     }
 
-    void updateList(ArrayList<Todo> list, int position) {
+    void updateListAddItem(ArrayList<Todo> list, int position) {
         mTodoList = list;
         this.notifyItemInserted(position);
     }
 
-    public interface OnDoneListener {
+    void updateListRemoveItem(ArrayList<Todo> list, int position) {
+        this.notifyItemRemoved(position);
+        mTodoList = list;
+    }
+
+    public interface OnTaskEventListener {
         void markedAsDone(int position);
+        void onTodoLongClick(int position);
     }
 }

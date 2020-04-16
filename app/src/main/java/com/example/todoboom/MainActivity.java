@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements TodoAdapter.OnDoneListener {
+public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTaskEventListener, DeleteTodoItemDialog.DeleteTodoItemDialogListener {
 
     ArrayList<Todo> mTodoList;
     EditText inputField;
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnDon
 
     private void addItem(Todo task) {
         mTodoList.add(task);
-        mAdapter.updateList(mTodoList, mTodoList.size() - 1);
+        mAdapter.updateListAddItem(mTodoList, mTodoList.size() - 1);
     }
 
     @Override
@@ -92,5 +92,18 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnDon
         task.setIsDone(true);
         String doneMessage = "TODO " + task.getDescription() +  " is now DONE. BOOM!";
         toastMessage(doneMessage);
+    }
+
+    @Override
+    public void onTodoLongClick(int position) {
+        DeleteTodoItemDialog dialog = new DeleteTodoItemDialog(position);
+        dialog.show(getSupportFragmentManager(), "Delete todo item dialog");
+    }
+
+    @Override
+    public void onDeleteTodoItemClicked(int position) {
+        Todo task = mTodoList.get(position);
+        mTodoList.remove(task);
+        mAdapter.updateListRemoveItem(mTodoList, position);
     }
 }
