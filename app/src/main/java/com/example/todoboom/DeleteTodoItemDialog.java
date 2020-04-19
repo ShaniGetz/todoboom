@@ -21,7 +21,7 @@ public class DeleteTodoItemDialog extends AppCompatDialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Attention!")
-                .setMessage("Are You Sure to delete?")
+                .setMessage("Are you sure you want to delete?")
                 .setNegativeButton("no", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
