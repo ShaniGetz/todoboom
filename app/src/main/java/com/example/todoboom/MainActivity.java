@@ -1,11 +1,14 @@
 package com.example.todoboom;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import android.content.SharedPreferences;
+import com.google.gson.Gson;
+import java.lang.reflect.Type;
+import com.google.gson.reflect.TypeToken;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,16 +16,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTaskEventListener, DeleteTodoItemDialog.DeleteTodoItemDialogListener {
+
+public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTaskEventListener,
+        DeleteTodoItemDialog.DeleteTodoItemDialogListener {
 
     ArrayList<Todo> mTodoList;
     EditText inputField;
     TextView textView;
     Button button;
-    private RecyclerView recyclerViewTasks;
     private TodoAdapter mAdapter;
 
     @Override
@@ -33,12 +36,13 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         inputField = findViewById(R.id.input_field);
         textView = findViewById(R.id.text);
         button = findViewById(R.id.button);
+        RecyclerView recyclerViewTasks = findViewById(R.id.recycler_view_tasks);
 
-        recyclerViewTasks = findViewById(R.id.recycler_view_tasks);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerViewTasks.setLayoutManager(layoutManager);
 
-        mTodoList = new ArrayList<>();
+        loadData();
+        logTodoListSize();
         mAdapter = new TodoAdapter(mTodoList,this);
         recyclerViewTasks.setAdapter(mAdapter);
 
@@ -56,20 +60,24 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         });
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString("inputFieldText",String.valueOf(inputField.getText()));
-        outState.putParcelableArrayList("TodoList",mTodoList);
+    private void saveData() {
+        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(mTodoList);
+        editor.putString("TodoList", json);
+        editor.apply();
     }
 
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        inputField.setText(savedInstanceState.getString("inputFieldText"));
-        mTodoList = savedInstanceState.getParcelableArrayList("TodoList");
-        mAdapter = new TodoAdapter(mTodoList, this);
-        recyclerViewTasks.setAdapter(mAdapter);
+    private void loadData() {
+        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString("TodoList", null);
+        Type type = new TypeToken<ArrayList<Todo>>() {}.getType();
+        mTodoList = gson.fromJson(json, type);
+        if (mTodoList == null) {
+            mTodoList = new ArrayList<>();
+        }
     }
 
     public void toastMessage(String message) {
@@ -84,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
     private void addItem(Todo task) {
         mTodoList.add(task);
         mAdapter.updateListAddItem(mTodoList, mTodoList.size() - 1);
+        saveData();
     }
 
     @Override
@@ -92,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         task.setIsDone(true);
         String doneMessage = "TODO " + task.getDescription() +  " is now DONE. BOOM!";
         toastMessage(doneMessage);
+        saveData();
     }
 
     @Override
@@ -105,5 +115,10 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         Todo task = mTodoList.get(position);
         mTodoList.remove(task);
         mAdapter.updateListRemoveItem(mTodoList, position);
+        saveData();
+    }
+
+    private void logTodoListSize() {
+        Log.e("Todo list Size is ", Integer.toString(mTodoList.size()));
     }
 }
