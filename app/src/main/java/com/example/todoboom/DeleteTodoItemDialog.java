@@ -11,11 +11,6 @@ import androidx.appcompat.app.AppCompatDialogFragment;
 
 public class DeleteTodoItemDialog extends AppCompatDialogFragment {
     private DeleteTodoItemDialogListener listener;
-    private int taskPosition;
-
-    DeleteTodoItemDialog(int taskPosition){
-        this.taskPosition = taskPosition;
-    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -31,14 +26,14 @@ public class DeleteTodoItemDialog extends AppCompatDialogFragment {
                 .setPositiveButton("yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        listener.onDeleteTodoItemClicked(taskPosition);
+                        listener.onDeleteTodoItemClicked();
                     }
                 });
         return builder.create();
     }
 
     public interface DeleteTodoItemDialogListener {
-        void onDeleteTodoItemClicked(int taskPosition);
+        void onDeleteTodoItemClicked();
     }
 
     @Override

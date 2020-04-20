@@ -23,16 +23,19 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTaskEventListener,
         DeleteTodoItemDialog.DeleteTodoItemDialogListener {
 
-    ArrayList<Todo> mTodoList;
+    private ArrayList<Todo> mTodoList;
     EditText inputField;
     TextView textView;
     Button button;
     private TodoAdapter mAdapter;
+    private int dialogValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        dialogValue = -1; // Default value
 
         inputField = findViewById(R.id.input_field);
         textView = findViewById(R.id.text);
@@ -61,17 +64,19 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         });
     }
 
-//    @Override
-//    public void onSaveInstanceState(@NonNull Bundle outState) {
-//        super.onSaveInstanceState(outState);
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
 //        outState.putString("inputFieldText",String.valueOf(inputField.getText()));
-//    }
-//
-//    @Override
-//    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
+        outState.putInt("dialogValue", dialogValue);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
 //        inputField.setText(savedInstanceState.getString("inputFieldText"));
-//    }
+        dialogValue = savedInstanceState.getInt("dialogValue");
+    }
 
     private void saveData() {
         SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
@@ -119,15 +124,21 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
 
     @Override
     public void onTodoLongClick(int position) {
-        DeleteTodoItemDialog dialog = new DeleteTodoItemDialog(position);
+        dialogValue = position;
+        DeleteTodoItemDialog dialog = new DeleteTodoItemDialog();
         dialog.show(getSupportFragmentManager(), "Delete todo item dialog");
     }
 
     @Override
-    public void onDeleteTodoItemClicked(int position) {
-        Todo task = mTodoList.get(position);
+    public void onDeleteTodoItemClicked() {
+        if (dialogValue <= -1) {
+            Log.e("Delete_no_position", "Delete was called with no position!");
+            return;
+        }
+        Todo task = mTodoList.get(dialogValue);
         mTodoList.remove(task);
-        mAdapter.updateListRemoveItem(mTodoList, position);
+        mAdapter.updateListRemoveItem(mTodoList, dialogValue);
+        dialogValue = -1;
         saveData();
     }
 
