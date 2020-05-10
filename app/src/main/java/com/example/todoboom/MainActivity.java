@@ -21,13 +21,11 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         DeleteTodoItemDialog.DeleteTodoItemDialogListener{
 
     private ArrayList<Todo> mTodoList;
-    private static final String SP_TODO_LIST = "TodoList";
     EditText inputField;
     TextView textView;
     Button button;
     private TodoAdapter mAdapter;
     private int dialogValue;
-    private static int idCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,12 +50,12 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Todo task = new Todo(String.valueOf(inputField.getText()), idCounter);
+                Todo task = new Todo(String.valueOf(inputField.getText()), TodoListManager.getIdCounter());
                 if (task.getDescription().length() == 0) {
                     toastMessage("you can't create an empty task");
                 } else {
                     addItem(task);
-                    idCounter++;
+                    TodoListManager.addByOneIdCounter();
                 }
                 inputField.setText("");
             }
