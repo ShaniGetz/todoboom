@@ -4,10 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.content.SharedPreferences;
-import com.google.gson.Gson;
-import java.lang.reflect.Type;
-import com.google.gson.reflect.TypeToken;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -21,19 +18,23 @@ import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTaskEventListener,
-        DeleteTodoItemDialog.DeleteTodoItemDialogListener {
+        DeleteTodoItemDialog.DeleteTodoItemDialogListener{
 
     private ArrayList<Todo> mTodoList;
+    private static final String SP_TODO_LIST = "TodoList";
     EditText inputField;
     TextView textView;
     Button button;
     private TodoAdapter mAdapter;
     private int dialogValue;
+    private static int idCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mTodoList = TodoListManager.getInstance().getAllTodos();
 
         dialogValue = -1; // Default value
 
@@ -45,19 +46,18 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerViewTasks.setLayoutManager(layoutManager);
 
-        loadData();
-        logTodoListSize();
         mAdapter = new TodoAdapter(mTodoList,this);
         recyclerViewTasks.setAdapter(mAdapter);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Todo task = new Todo(String.valueOf(inputField.getText()));
+                Todo task = new Todo(String.valueOf(inputField.getText()), idCounter);
                 if (task.getDescription().length() == 0) {
                     toastMessage("you can't create an empty task");
                 } else {
                     addItem(task);
+                    idCounter++;
                 }
                 inputField.setText("");
             }
@@ -78,26 +78,6 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         dialogValue = savedInstanceState.getInt("dialogValue");
     }
 
-    private void saveData() {
-        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        Gson gson = new Gson();
-        String json = gson.toJson(mTodoList);
-        editor.putString("TodoList", json);
-        editor.apply();
-    }
-
-    private void loadData() {
-        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
-        Gson gson = new Gson();
-        String json = sharedPreferences.getString("TodoList", null);
-        Type type = new TypeToken<ArrayList<Todo>>() {}.getType();
-        mTodoList = gson.fromJson(json, type);
-        if (mTodoList == null) {
-            mTodoList = new ArrayList<>();
-        }
-    }
-
     public void toastMessage(String message) {
         Toast newToast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT);
         newToast.setGravity(Gravity.CENTER_HORIZONTAL, 0, 0);
@@ -108,18 +88,16 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
     }
 
     private void addItem(Todo task) {
-        mTodoList.add(task);
+        TodoListManager.getInstance().addTodo(task, getApplicationContext());
         mAdapter.updateListAddItem(mTodoList, mTodoList.size() - 1);
-        saveData();
     }
 
     @Override
     public void markedAsDone (int position) {
         Todo task = mTodoList.get(position);
-        task.setIsDone(true);
+        TodoListManager.getInstance().markTodoAsDone(task, getApplicationContext());
         String doneMessage = "TODO " + task.getDescription() +  " is now DONE. BOOM!";
         toastMessage(doneMessage);
-        saveData();
     }
 
     @Override
@@ -136,13 +114,9 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
             return;
         }
         Todo task = mTodoList.get(dialogValue);
-        mTodoList.remove(task);
+        TodoListManager.getInstance().deleteTodoForever(task, getApplicationContext());
         mAdapter.updateListRemoveItem(mTodoList, dialogValue);
         dialogValue = -1;
-        saveData();
     }
 
-    private void logTodoListSize() {
-        Log.e("Todo list Size is ", Integer.toString(mTodoList.size()));
-    }
 }
