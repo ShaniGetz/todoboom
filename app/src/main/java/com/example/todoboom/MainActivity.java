@@ -1,12 +1,11 @@
 package com.example.todoboom;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,18 +13,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 
 
-public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTaskEventListener,
-        DeleteTodoItemDialog.DeleteTodoItemDialogListener{
+public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTaskEventListener{
 
     private ArrayList<Todo> mTodoList;
     EditText inputField;
     TextView textView;
     Button button;
     private TodoAdapter mAdapter;
-    private int dialogValue;
+    RecyclerView recyclerViewTasks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,12 +35,10 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
 
         mTodoList = TodoListManager.getInstance().getAllTodos();
 
-        dialogValue = -1; // Default value
-
         inputField = findViewById(R.id.input_field);
         textView = findViewById(R.id.text);
         button = findViewById(R.id.button);
-        RecyclerView recyclerViewTasks = findViewById(R.id.recycler_view_tasks);
+        recyclerViewTasks = findViewById(R.id.recycler_view_tasks);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerViewTasks.setLayoutManager(layoutManager);
@@ -50,12 +49,11 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Todo task = new Todo(String.valueOf(inputField.getText()), TodoListManager.getIdCounter());
-                if (task.getDescription().length() == 0) {
+                String taskDescription = String.valueOf(inputField.getText());
+                if (taskDescription.length() == 0) {
                     toastMessage("you can't create an empty task");
                 } else {
-                    addItem(task);
-                    TodoListManager.addByOneIdCounter();
+                    addItem(taskDescription);
                 }
                 inputField.setText("");
             }
@@ -63,17 +61,9 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
     }
 
     @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-//        outState.putString("inputFieldText",String.valueOf(inputField.getText()));
-        outState.putInt("dialogValue", dialogValue);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-//        inputField.setText(savedInstanceState.getString("inputFieldText"));
-        dialogValue = savedInstanceState.getInt("dialogValue");
+    protected void onResume() {
+        super.onResume();
+        recyclerViewTasks.setAdapter(mAdapter);
     }
 
     public void toastMessage(String message) {
@@ -85,36 +75,112 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         newToast.show();
     }
 
-    private void addItem(Todo task) {
+    private void addItem(String taskDescription) {
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
+        Date date = ts;
+        String timestampStr = date.toString();
+        Todo task = new Todo(taskDescription, View.generateViewId(), timestampStr, timestampStr);
         TodoListManager.getInstance().addTodo(task, getApplicationContext());
         mAdapter.updateListAddItem(mTodoList, mTodoList.size() - 1);
     }
 
     @Override
-    public void markedAsDone (int position) {
+    public void onTodoClick(int position) {
         Todo task = mTodoList.get(position);
-        TodoListManager.getInstance().markTodoAsDone(task, getApplicationContext());
+        int taskId = task.getId();
+        if(!task.getIsDone()){
+//            openNotCompletedTodoActivity(taskId);
+            openNotCompletedTodoActivity(position); //with pos and not id
+        }
+        else {
+//            openCompletedTodoActivity(taskId);
+            openCompletedTodoActivity(position);
+        }
+    }
+
+    private void openNotCompletedTodoActivity(int taskId) {
+        Intent intent = new Intent(this, NotCompletedTodoActivity.class);
+        intent.putExtra("taskId", taskId); //with pos and not id
+        startActivityForResult(intent, 1);
+    }
+
+    private void openCompletedTodoActivity(int taskId) {
+        Intent intent = new Intent(this, CompletedTodoActivity.class);
+        intent.putExtra("taskId", taskId); //with pos and not id
+        startActivityForResult(intent, 2);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK) {
+            return;
+        }
+        int todoId = data.getIntExtra("todoId", 0); //pos and not id
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                boolean isUpdate = data.getBooleanExtra("updateTodoDescription", false);
+                boolean isMarkAsDone = data.getBooleanExtra("markTodoAsDone", false);
+                if(isUpdate){
+                    updateTodoDescription(todoId);
+                }
+                if (isMarkAsDone) {
+                    markAsDone(todoId);
+                }
+            }
+        }if (requestCode == 2){
+            if(resultCode == RESULT_OK){
+                boolean isUnmarkAsDone = data.getBooleanExtra("unmarkTodoAsDone", false);
+                boolean todoIsDelete = data.getBooleanExtra("todoIsDelete", false);
+                if(isUnmarkAsDone){
+                    unmarkAsDone(todoId);
+                }
+                if(todoIsDelete){
+                    deleteTodo(todoId);
+                }
+            }
+        }
+    }
+
+    private void updateTodoDescription(int taskId){ //with pos and not id
+//        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
+        Todo task = mTodoList.get(taskId);
+        String updateMessage = "TODO " + task.getDescription() +  " is now UPDATE";
+        toastMessage(updateMessage);
+    }
+
+    private void markAsDone(int taskId){ //with pos and not id
+//        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
+        Todo task = mTodoList.get(taskId);
         String doneMessage = "TODO " + task.getDescription() +  " is now DONE. BOOM!";
         toastMessage(doneMessage);
     }
 
-    @Override
-    public void onTodoLongClick(int position) {
-        dialogValue = position;
-        DeleteTodoItemDialog dialog = new DeleteTodoItemDialog();
-        dialog.show(getSupportFragmentManager(), "Delete todo item dialog");
+    private void unmarkAsDone(int taskId){ //with pos and not id
+//        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
+        Todo task = mTodoList.get(taskId);
+        String doneMessage = "TODO " + task.getDescription() +  " is NOT DONE!";
+        toastMessage(doneMessage);
+    }
+
+    private void deleteTodo(int taskId){ //with pos and not id
+//        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
+        mAdapter.updateListRemoveItem(mTodoList, taskId);
+        String doneMessage = "TODO task is DELETE";
+        toastMessage(doneMessage);
     }
 
     @Override
-    public void onDeleteTodoItemClicked() {
-        if (dialogValue <= -1) {
-            Log.e("Delete_no_position", "Delete was called with no position!");
-            return;
+    public void onCheckedChangedClick(int position){
+        Todo task = mTodoList.get(position);
+        if(!task.getIsDone()){
+            task.setIsDone(true);
+            markAsDone(position);
         }
-        Todo task = mTodoList.get(dialogValue);
-        TodoListManager.getInstance().deleteTodoForever(task, getApplicationContext());
-        mAdapter.updateListRemoveItem(mTodoList, dialogValue);
-        dialogValue = -1;
+        else {
+            task.setIsDone(false);
+            unmarkAsDone(position);
+        }
+        TodoListManager.getInstance().saveData(getApplicationContext());
     }
-
 }

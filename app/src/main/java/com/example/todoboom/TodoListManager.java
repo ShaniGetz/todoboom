@@ -14,7 +14,6 @@ public class TodoListManager {
 
     private static TodoListManager single_instance = null;
     private ArrayList<Todo> mTodoList;
-    private static int idCounter = 0;
     private static final String SP_TODO_LIST = "TodoList";
 
     private TodoListManager(Context context) {
@@ -39,12 +38,11 @@ public class TodoListManager {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         Gson gson = new Gson();
         String json = sharedPreferences.getString(SP_TODO_LIST, null);
-        Type type = new TypeToken<ArrayList<Todo>>() {
-        }.getType();
+        Type type = new TypeToken<ArrayList<Todo>>() {}.getType();
         mTodoList = gson.fromJson(json, type);
     }
 
-    private void saveData(Context context) {
+    public void saveData(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         Gson gson = new Gson();
@@ -76,15 +74,12 @@ public class TodoListManager {
         return mTodoList;
     }
 
-    public static void addByOneIdCounter(){
-        idCounter++;
+    public Todo getTodoFromId(int id){
+        for(Todo todoTask : mTodoList){
+            if(todoTask.getId() == id){
+                return todoTask;
+            }
+        }
+        return null;
     }
-
-    public static int getIdCounter(){
-        return idCounter;
-    }
-
-//    public Todo getTodoFromId(int id){
-//        return mTodoList.get(id);
-//    }
 }

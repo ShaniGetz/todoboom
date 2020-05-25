@@ -3,5 +3,15 @@
     <string name="image_logo_description">"todoboom image logo"</string>
     <string name="enter_input_task">"Enter a task here!"</string>
     <string name="todo_list_title">"My TODO list:"</string>
+    <string name="todo_title">"My TODO:"</string>
+    <string name="todo_completed_title">"My completed TODO:"</string>
     <string name="button_add_task">"ADD TASK</string>
+    <string name="un_mark_todo_as_done">UN-MARK TASK AS DONE</string>
+    <string name="delete_task">DELETE TASK</string>
+    <string name="was_created">Was created: </string>
+    <string name="edit_your_todo">Edit your todo</string>
+    <string name="apply">APPLY</string>
+    <string name="mark_todo_as_done">MARK TASK AS DONE</string>
+    <string name="edit_your_task">Edit your task: </string>
+    <string name="last_modified">Last modified: </string>
 </resources>

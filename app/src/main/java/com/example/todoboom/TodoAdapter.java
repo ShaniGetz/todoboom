@@ -16,7 +16,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
     private ArrayList<Todo> mTodoList;
     private OnTaskEventListener mOnTaskEventListener;
 
-    static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
+    static class MyViewHolder extends RecyclerView.ViewHolder implements    View.OnClickListener {
 
         TextView textViewTask;
         CheckBox checkBoxIsDone;
@@ -27,14 +27,13 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
             this.textViewTask = itemView.findViewById(R.id.TextViewTask);
             this.checkBoxIsDone = itemView.findViewById(R.id.CheckBoxIsDone);
             this.mOnTaskEventListener = mOnTaskEventListener;
-            itemView.setOnLongClickListener(this);
+            itemView.setOnClickListener(this);
 
         }
 
         @Override
-        public boolean onLongClick(View v) {
-            mOnTaskEventListener.onTodoLongClick(getAdapterPosition());
-            return false;
+        public void onClick(View v) {
+            mOnTaskEventListener.onTodoClick(getAdapterPosition());
         }
     }
 
@@ -61,10 +60,10 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
         {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    buttonView.setEnabled(false);
-                    mOnTaskEventListener.markedAsDone(position);
-                }
+                mOnTaskEventListener.onCheckedChangedClick(position);
+//                if (isChecked) {
+//                    buttonView.setEnabled(false);
+//                }
             }
         });
     }
@@ -73,7 +72,6 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
     public int getItemCount() {
         return mTodoList.size();
     }
-
 
     void updateListAddItem(ArrayList<Todo> list, int position) {
         mTodoList = list;
@@ -86,7 +84,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
     }
 
     public interface OnTaskEventListener {
-        void markedAsDone(int position);
-        void onTodoLongClick(int position);
+        void onTodoClick(int position);
+        void onCheckedChangedClick(int position);
     }
 }
