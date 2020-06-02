@@ -1,70 +1,100 @@
 package com.example.todoboom;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.util.Log;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import androidx.annotation.Nullable;
 
-import java.lang.reflect.Type;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
 
 public class TodoListManager {
 
     private static TodoListManager single_instance = null;
     private ArrayList<Todo> mTodoList;
-    private static final String SP_TODO_LIST = "TodoList";
+    private static final String LOG_TAG = "FirestoreManager";
 
-    private TodoListManager(Context context) {
-        loadData(context);
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private CollectionReference todoRef = db.collection("allTodo");
+
+
+    private TodoListManager(){
         if (mTodoList == null) {
             mTodoList = new ArrayList<>();
         }
+        createLiveQuery();
     }
 
-    public static TodoListManager getInstance(Context context) {
+    private void createLiveQuery(){
+        todoRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                if(e!=null){
+                    Log.d(LOG_TAG, "snapshot exception");
+                }
+                if(queryDocumentSnapshots == null){
+                    Log.d(LOG_TAG, "null value");
+                }
+                TodoListManager.this.mTodoList.clear();
+                for(QueryDocumentSnapshot doc : queryDocumentSnapshots){
+                    Todo newTodo = doc.toObject(Todo.class);
+                    mTodoList.add(newTodo);
+                }
+            }
+        });
+    }
+
+    public static TodoListManager getInstance() {
         if (single_instance == null) {
-            single_instance = new TodoListManager(context);
+            single_instance = new TodoListManager();
         }
         return(single_instance);
     }
 
-    public static TodoListManager getInstance() {
-        return(single_instance);
-    }
-
-    private void loadData(Context context){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        Gson gson = new Gson();
-        String json = sharedPreferences.getString(SP_TODO_LIST, null);
-        Type type = new TypeToken<ArrayList<Todo>>() {}.getType();
-        mTodoList = gson.fromJson(json, type);
-    }
-
-    public void saveData(Context context) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        Gson gson = new Gson();
-        String json = gson.toJson(mTodoList);
-        editor.putString(SP_TODO_LIST, json);
-        editor.apply();
-    }
-
-    public void addTodo(Todo task, Context context) {
+    public void addTodo(Todo task) {
+        if(mTodoList.contains(task)){
+            Log.w(LOG_TAG, "ignoring, task already in local arrayList!");
+        }
         mTodoList.add(task);
-        saveData(context);
+        DocumentReference document = db.collection("allTodo").document();
+        task.setId(document.getId());
+        document.set(task);
     }
 
-    public void markTodoAsDone(Todo task, Context context) {
-        task.setIsDone(true);
-        saveData(context);
+    public void updateTodo(Todo oldTask, Todo newTask){
+        int index = getTodoIdxFromId(oldTask.getId());
+        if(index == -1){
+            Log.e(LOG_TAG, "can't edit todo: could not find old todo!");
+            return;
+        }
+        mTodoList.remove(oldTask);
+        mTodoList.add(index, newTask);
+        // update in firebase
+        String documentId = oldTask.getId();
+        if (documentId == null) {
+            Log.e(LOG_TAG, "can't update todo in firestore, no docucment-id!" + oldTask);
+            return;
+        }
+        newTask.setId(documentId);
+        todoRef.document(documentId).set(newTask);
     }
 
-    public void deleteTodoForever(Todo task, Context context) {
+    public void deleteTodoForever(final Todo task) {
         mTodoList.remove(task);
-        saveData(context);
+        String documentId = task.getId();
+        if(documentId == null){
+            Log.e(LOG_TAG, "can't delete todo, no docucment-id to delete in firestore!" + task);
+            return;
+        }
+        todoRef.document(documentId).delete();
     }
+
 
     public int getSize(){
         return mTodoList.size();
@@ -74,12 +104,21 @@ public class TodoListManager {
         return mTodoList;
     }
 
-    public Todo getTodoFromId(int id){
-        for(Todo todoTask : mTodoList){
-            if(todoTask.getId() == id){
+    public Todo getTodoFromId(String id){
+            for(Todo todoTask : mTodoList){
+            if(todoTask.getId().equals(id)){
                 return todoTask;
             }
         }
         return null;
+    }
+
+    public int getTodoIdxFromId(String id){
+        for (int i = 0; i < mTodoList.size(); i++) {
+            if (mTodoList.get(i).getId().equals(id)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

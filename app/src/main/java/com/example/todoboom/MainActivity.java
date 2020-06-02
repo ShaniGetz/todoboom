@@ -76,47 +76,41 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
     }
 
     private void addItem(String taskDescription) {
-        Timestamp ts = new Timestamp(System.currentTimeMillis());
-        Date date = ts;
-        String timestampStr = date.toString();
-        Todo task = new Todo(taskDescription, View.generateViewId(), timestampStr, timestampStr);
-        TodoListManager.getInstance().addTodo(task, getApplicationContext());
+        Date ts = new Timestamp(System.currentTimeMillis());
+        String timestampStr = ts.toString();
+        Todo task = new Todo(taskDescription, timestampStr, timestampStr);
+        TodoListManager.getInstance().addTodo(task);
         mAdapter.updateListAddItem(mTodoList, mTodoList.size() - 1);
     }
 
     @Override
     public void onTodoClick(int position) {
         Todo task = mTodoList.get(position);
-        int taskId = task.getId();
         if(!task.getIsDone()){
-//            openNotCompletedTodoActivity(taskId);
-            openNotCompletedTodoActivity(position); //with pos and not id
+            openNotCompletedTodoActivity(task.getId());
         }
         else {
-//            openCompletedTodoActivity(taskId);
-            openCompletedTodoActivity(position);
+            openCompletedTodoActivity(task.getId(),position);
         }
     }
 
-    private void openNotCompletedTodoActivity(int taskId) {
+    private void openNotCompletedTodoActivity(String taskId) {
         Intent intent = new Intent(this, NotCompletedTodoActivity.class);
-        intent.putExtra("taskId", taskId); //with pos and not id
+        intent.putExtra("taskId", taskId);
         startActivityForResult(intent, 1);
     }
 
-    private void openCompletedTodoActivity(int taskId) {
+    private void openCompletedTodoActivity(String taskId, int position) {
         Intent intent = new Intent(this, CompletedTodoActivity.class);
-        intent.putExtra("taskId", taskId); //with pos and not id
+        intent.putExtra("taskId", taskId);
+        intent.putExtra("taskPos", position);
         startActivityForResult(intent, 2);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != RESULT_OK) {
-            return;
-        }
-        int todoId = data.getIntExtra("todoId", 0); //pos and not id
+        String todoId = data.getStringExtra("todoId");
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
                 boolean isUpdate = data.getBooleanExtra("updateTodoDescription", false);
@@ -142,30 +136,26 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
         }
     }
 
-    private void updateTodoDescription(int taskId){ //with pos and not id
-//        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
-        Todo task = mTodoList.get(taskId);
-        String updateMessage = "TODO " + task.getDescription() +  " is now UPDATE";
+    private void updateTodoDescription(String taskId){
+        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
+        String updateMessage = "TODO " + task.getDescription() +  " is now updated!";
         toastMessage(updateMessage);
     }
 
-    private void markAsDone(int taskId){ //with pos and not id
-//        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
-        Todo task = mTodoList.get(taskId);
-        String doneMessage = "TODO " + task.getDescription() +  " is now DONE. BOOM!";
+    private void markAsDone(String taskId){
+        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
+        String doneMessage = "TODO " + task.getDescription() +  " is now done. BOOM!";
         toastMessage(doneMessage);
     }
 
-    private void unmarkAsDone(int taskId){ //with pos and not id
-//        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
-        Todo task = mTodoList.get(taskId);
+    private void unmarkAsDone(String taskId){
+        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
         String doneMessage = "TODO " + task.getDescription() +  " is NOT DONE!";
         toastMessage(doneMessage);
     }
 
-    private void deleteTodo(int taskId){ //with pos and not id
-//        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
-        mAdapter.updateListRemoveItem(mTodoList, taskId);
+    private void deleteTodo(String taskId){
+        Todo task = TodoListManager.getInstance().getTodoFromId(taskId);
         String doneMessage = "TODO task is DELETE";
         toastMessage(doneMessage);
     }
@@ -173,14 +163,21 @@ public class MainActivity extends AppCompatActivity implements TodoAdapter.OnTas
     @Override
     public void onCheckedChangedClick(int position){
         Todo task = mTodoList.get(position);
+        String id = task.getId();
+        Date ts = new Timestamp(System.currentTimeMillis());
+        task.setEditTimestamp(ts.toString());
         if(!task.getIsDone()){
-            task.setIsDone(true);
-            markAsDone(position);
+            markAsDone(id);
+            Todo newTodo = task;
+            newTodo.setIsDone(true);
+            TodoListManager.getInstance().updateTodo(task, newTodo);
         }
         else {
             task.setIsDone(false);
-            unmarkAsDone(position);
+            unmarkAsDone(id);
+            Todo newTodo = task;
+            newTodo.setIsDone(false);
+            TodoListManager.getInstance().updateTodo(task, newTodo);
         }
-        TodoListManager.getInstance().saveData(getApplicationContext());
     }
 }

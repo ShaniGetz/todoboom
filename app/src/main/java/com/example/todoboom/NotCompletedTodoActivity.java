@@ -17,7 +17,7 @@ public class NotCompletedTodoActivity extends AppCompatActivity {
     EditText inputFieldEdit;
     TextView textViewLastModified;
     TextView textViewWasCreated;
-    int todoTaskId;
+    String todoTaskId;
     Todo todoTask;
     Intent intentBack1;
 
@@ -26,12 +26,12 @@ public class NotCompletedTodoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_not_completed_todo);
         Intent intentCreatedMe = getIntent();
-        todoTaskId = intentCreatedMe.getIntExtra("taskId", 0); //pos and not id
-//        todoTask = TodoListManager.getInstance().getTodoFromId(todoTaskId);
-        todoTask = TodoListManager.getInstance().getAllTodos().get(todoTaskId); //with pos and not id
+        todoTaskId = intentCreatedMe.getStringExtra("taskId");
+        todoTask = TodoListManager.getInstance().getTodoFromId(todoTaskId);
         setMyContentView();
         intentBack1 = new Intent();
-        intentBack1.putExtra("todoId", todoTaskId); //pos and not id
+        intentBack1.putExtra("todoId", todoTaskId);
+        setResult(RESULT_OK, intentBack1);
     }
 
     private void setMyContentView() {
@@ -47,26 +47,25 @@ public class NotCompletedTodoActivity extends AppCompatActivity {
 
     public void applyEditButtonOnClick(View view){
         String newDescription = String.valueOf(inputFieldEdit.getText());
-        todoTask.setDescription(newDescription);
         textViewTodo.setText(newDescription);
         inputFieldEdit.setText(newDescription);
-        Timestamp ts = new Timestamp(System.currentTimeMillis());
-        Date date = ts;
-        todoTask.setEditTimestamp(date.toString());
-        textViewLastModified.setText(date.toString());
+        Date ts = new Timestamp(System.currentTimeMillis());
+        textViewLastModified.setText(ts.toString());
+        Todo newTodo = new Todo(newDescription, todoTask.getCreationTimestamp(), ts.toString());
+        TodoListManager.getInstance().updateTodo(todoTask, newTodo);
+        todoTask = newTodo;
         intentBack1.putExtra("updateTodoDescription", true);
         setResult(RESULT_OK, intentBack1);
-        TodoListManager.getInstance().saveData(getApplicationContext());
     }
 
     public void markAsDoneButtonOnClick(View view){
-        todoTask.setIsDone(true);
-        Timestamp ts = new Timestamp(System.currentTimeMillis());
-        Date date = ts;
-        todoTask.setEditTimestamp(date.toString());
+        Date ts = new Timestamp(System.currentTimeMillis());
+        todoTask.setEditTimestamp(ts.toString());
+        Todo newTodo = todoTask;
+        newTodo.setIsDone(true);
+        TodoListManager.getInstance().updateTodo(todoTask, newTodo);
         intentBack1.putExtra("markTodoAsDone", true);
         setResult(RESULT_OK, intentBack1);
-        TodoListManager.getInstance().saveData(getApplicationContext());
         finish();
     }
 }

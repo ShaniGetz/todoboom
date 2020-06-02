@@ -9,7 +9,7 @@ public class Todo implements Parcelable {
     private boolean isDone;
     private String creationTimestamp;
     private String editTimestamp;
-    private int id;
+    private String id;
 
 
     private Todo(Parcel in) {
@@ -17,7 +17,10 @@ public class Todo implements Parcelable {
         isDone = in.readByte() != 0;
         creationTimestamp = in.readString();
         editTimestamp = in.readString();
-        id = in.readInt();
+        id = in.readString();
+    }
+
+    public Todo(){
     }
 
     public static final Creator<Todo> CREATOR = new Creator<Todo>() {
@@ -43,18 +46,18 @@ public class Todo implements Parcelable {
         dest.writeInt(isDone ? 1 : 0);
         dest.writeString(creationTimestamp);
         dest.writeString(editTimestamp);
-        dest.writeInt(id);
+        dest.writeString(id);
     }
 
-    Todo(String description, int id, String creationTimestamp, String editTimestamp){
+    Todo(String description, String creationTimestamp, String editTimestamp){
         this.description = description;
         this.isDone = false;
-        this.id = id;
         this.creationTimestamp = creationTimestamp;
         this.editTimestamp = editTimestamp;
+        this.id = null;
     }
 
-    String getDescription() {
+    public String getDescription() {
         return description;
     }
 
@@ -62,7 +65,7 @@ public class Todo implements Parcelable {
         this.description = description;
     }
 
-    boolean getIsDone(){
+    public boolean getIsDone(){
         return isDone;
     }
 
@@ -70,13 +73,13 @@ public class Todo implements Parcelable {
         this.isDone=bool;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
-//
-//    public void setId(int id) {
-//        this.id = id;
-//    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getCreationTimestamp() {
         return creationTimestamp;

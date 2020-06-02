@@ -78,11 +78,6 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.MyViewHolder>{
         this.notifyItemInserted(position);
     }
 
-    void updateListRemoveItem(ArrayList<Todo> list, int position) {
-        this.notifyItemRemoved(position);
-        mTodoList = list;
-    }
-
     public interface OnTaskEventListener {
         void onTodoClick(int position);
         void onCheckedChangedClick(int position);

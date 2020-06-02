@@ -9,10 +9,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import java.sql.Timestamp;
+import java.util.Date;
+
 public class CompletedTodoActivity extends AppCompatActivity implements DeleteTodoItemDialog.DeleteTodoItemDialogListener {
 
     TextView textViewTodo;
-    int todoTaskId;
+    String todoTaskId;
+    int todoTaskPos;
     Todo todoTask;
     Intent intentBack2;
     private int dialogValue;
@@ -23,12 +27,13 @@ public class CompletedTodoActivity extends AppCompatActivity implements DeleteTo
         setContentView(R.layout.activity_completed_todo);
         dialogValue = -1; // Default value
         Intent intentCreatedMe = getIntent();
-        todoTaskId = intentCreatedMe.getIntExtra("taskId", 0); //pos and not id
-//        todoTask = TodoListManager.getInstance().getTodoFromId(todoTaskId);
-        todoTask = TodoListManager.getInstance().getAllTodos().get(todoTaskId); //with pos and not id
+        todoTaskId = intentCreatedMe.getStringExtra("taskId");
+        todoTaskPos = intentCreatedMe.getIntExtra("taskPos", 0);
+        todoTask = TodoListManager.getInstance().getTodoFromId(todoTaskId);
         setMyContentView();
         intentBack2 = new Intent();
-        intentBack2.putExtra("todoId", todoTaskId); //pos and not id
+        intentBack2.putExtra("todoId", todoTaskId);
+        setResult(RESULT_OK, intentBack2);
     }
 
     private void setMyContentView() {
@@ -49,15 +54,20 @@ public class CompletedTodoActivity extends AppCompatActivity implements DeleteTo
     }
 
     public void unmarkAsDoneButtonOnClick(View view){
-        todoTask.setIsDone(false);
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
+        Date date = ts;
+        todoTask.setEditTimestamp(date.toString());
+        Todo newTodo = todoTask;
+        newTodo.setIsDone(false);
+        TodoListManager.getInstance().updateTodo(todoTask, newTodo);
         intentBack2.putExtra("unmarkTodoAsDone", true);
         setResult(RESULT_OK, intentBack2);
-        TodoListManager.getInstance().saveData(getApplicationContext());
         finish();
     }
 
     public void deleteButtonOnClick(View view){
-        dialogValue = todoTaskId;
+
+        dialogValue = todoTaskPos;
         DeleteTodoItemDialog dialog = new DeleteTodoItemDialog();
         dialog.show(getSupportFragmentManager(), "Delete todo item dialog");
     }
@@ -68,7 +78,7 @@ public class CompletedTodoActivity extends AppCompatActivity implements DeleteTo
             Log.e("Delete_no_position", "Delete was called with no position!");
             return;
         }
-        TodoListManager.getInstance().deleteTodoForever(todoTask, getApplicationContext());
+        TodoListManager.getInstance().deleteTodoForever(todoTask);
         intentBack2.putExtra("todoIsDelete", true);
         setResult(RESULT_OK, intentBack2);
         dialogValue = -1;
